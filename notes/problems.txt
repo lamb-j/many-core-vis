@@ -1,0 +1,19 @@
+ - vtkm can't read in a ppm
+ - vtkm can't write out a ppm
+
+ - can't figure out how to overwrite a DataSet's field, or add new fields
+ - no javac on Alaska
+
+ - didn't end up using any DPPs
+  - looked for "execution pool array"
+  - just used for(vtkm::Id...), array handlers, portals
+
+"put loop in worklet"
+
+
+- timing stuff
+  - serial
+  - cuda
+  - openacc     89.5 ms
+  - vtkm        373.2 ms
+

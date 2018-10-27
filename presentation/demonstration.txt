@@ -1,0 +1,36 @@
+- Download/Install TAU
+
+- configure
+  - cuda to cuda library
+  - bfd to download
+  - pdt??
+
+- make install
+
+
+- add tau path in bashrc
+- add tau makefile to path in bashrc
+
+
+----
+Go over your code?
+
+
+Dynamic Instrumentation
+  Cuda calls intercepted, replaced by Tau wrapper calls that collect performance
+  information
+
+  tau_exec -cupti ./radial_field
+  pprof
+  paraprof
+
+Compiler Instrumentation
+  Replace nvcc with tau_cc.sh
+
+  Host code functions can be profilied now
+  Set the optCompInst flag in .bashrc
+
+  ./radial_field
+
+Source Code Instrumentation
+  - next time!

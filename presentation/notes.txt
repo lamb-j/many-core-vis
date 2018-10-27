@@ -1,0 +1,28 @@
+5 - 10 minutes GPU / GPU Programming overview
+   OpenCL vs CUDA terminology / example kernels 
+
+5 - 10 minutes TAU overview
+  Why is TAU
+  Why is it useful
+  
+10 - 20 minutes TAU demo
+  how to build and configure tau
+  run a simple profile
+
+  how to read/interpret results, change code, rerun, see gainz
+
+  Try on a second example?
+  Different options?
+
+
+If OpenACC is so much easier to use, why do we need CUDA.
+
+That's a good question. Maybe we don't need CUDA and OpenCL. I think the 
+common answer here is that CUDA allows you to highly tune your application, which
+is generally what you want in HPC. But if you're really good with OpenACC, I'm not but 
+I've seen programs written by people who are, but yeah if you're really good you 
+can insert abunch of pragmas and write fine-tuned OpenACC. 
+But at that point, at least to me,
+the code becomes hard to read and debug, and defeats the purpose of a directive-based
+programming langauge. And in that instance I think maybe you should just be programming
+in CUDA.

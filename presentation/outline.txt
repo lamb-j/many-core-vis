@@ -1,0 +1,290 @@
+1. Title
+
+make CC=tau_cc.sh
+
+Change cmake nvcc compiler to tau_cc.sh
+
+can try with tau2 examples/gpu cuda
+
+by default looks for MPI bindings
+
+-optTauSelectFile=selective instrumentation file
+set through command line or env var
+
+
+unwind=dowload
+-iowrapper
+
+nvcc matmul.cu
+tau_exec -cupti matmult
+  gives time spent in kernels 
+  shows data transfer
+  show cuda_wait()
+
+  will not instrument functions on the host
+
+use tau_cc.sh
+  will use nvcc and -optCompInst
+  will get host functions
+
+  pdt does not support cuda
+
+2. Outline
+  GPUs
+    - Overview
+      - Definition with some pictures
+      - Architecture explanation
+      - Common misconceptiosn
+      - Types of problems GPUs
+
+    - CUDA
+      - overview
+        C/C++, nvidia compiler, blah blah
+      - vocab
+        Grids, Blocks, Threads
+        Host code, device code, global code
+
+
+      - serial sample code
+
+      for (i = 0; i < N; i++) {
+        c[i] = a[i] + b[i];
+      }
+
+
+      - sample code (vecadd?)
+
+      int size = N * sizeof(int);
+
+      cudaMalloc((void **)&d_a, size);
+      cudaMalloc((void **)&d_b, size);
+      cudaMalloc((void **)&d_c, size);
+
+      cudaMemcpy(d_a, &a, size, cudaMemcpyHostToDevice);
+      cudaMemcpy(d_b, &b, size, cudaMemcpyHostToDevice);
+
+      add<<<N,1>>>(d_a, d_b, d_c);
+
+      cudaMemcpy(c, d_c, size, cudaMemcpyDeviceToHost);
+      cudaFree(d_a); cudaFree(d_b); cudaFree(d_c);
+
+
+      __device__ void add(int *a, int *b, int *c) 
+      {
+        c[blockIdx.x] = a[blockIdx.x] + b[blockIdx.x];
+      }
+      ---
+
+      __device__ void add(int *a, int *b, int *c) 
+      {
+        c[threadIdx.x] = a[threadIdx.x] + b[threadIdx.x];
+      }
+
+      add<<<1,N>>>(d_a, d_b, d_c);
+
+      - adv/disadv
+         Adv - clean API, runs really well on CUDA-enabled GPUs, which are pretty common
+         Dis - only runs on CUDA-enabled GPUs
+
+    - OpenCL 
+      - overview
+      - vocab
+      - sample code (vecadd?)
+      https://www.olcf.ornl.gov/tutorials/opencl-vector-addition/
+      - adv/disadv
+         Adv - runs on most GPUs, including Nvidia and AMDs
+         Dis - Not a fan of the boilerplate code
+
+    - OpenACC
+      - overview
+      - vocab
+      - sample code (vecadd?)
+        see my presentation
+      - adv/disadv
+        Adv - easy to use, cross device, works well
+        Dis - somewhat limited compiler support
+
+  TAU
+    - Overview
+
+    Overwhelming capibilites, features, and the whole profiling vocabulary,
+      hooks in with all these other tools so you can use multiple tools at
+      the same time.
+
+    C, C++, Fotran, Java, Python
+
+       PAPI - fancy version of gettimeofday();
+       Vampir, Jumpshot, ParaVer, OpenShmem, APEX, Beacon, DynastAPI, MAQAO 
+
+-optComptInst
+    -- 
+    Interposition - LIBRARY level
+      tau_exec
+
+      Dynamic instrumentation?
+      Library pre-loading
+        So instead of normal MPI library, or CUDA library, you use
+         TAUs function wrappers
+      "Wrapping external runtime libraries" (I/O, MPI, Memory, CUDA, OpenCL, pthread)
+
+       // Original Code
+       cuda_malloc(Object);
+
+       // Instrumented function
+       TAU_cuda_malloc(Object) 
+       {
+         Tau_memory_transfers += sizeof(Object);
+         cuda_malloc(Object);
+       }
+
+       // Original Code
+       MPI_Send(Message);
+
+       // Instrumented function
+       TAU_MPI_Send(Message) 
+       {
+         int timer = gettimeofday();
+         MPI_Send(Message);
+         timer = timer - gettimeofday();
+
+         Tau_send_times += timer;
+      }
+
+// serial program
+gcc -o binary source_code.c
+tau_exec ./binary
+
+// MPI program
+mpicc -o mpi_binary mpi_source_code.c
+tau_exec -T MPI mpirun -np 4 ./mpi_binary
+
+// CUDA program
+nvcc binary cuda_source.cu
+tau_exec -T serial,cupti -cupti cuda_binary
+
+
+    Compiler - FUNCTION level
+      tau_cc.sh
+
+      rewrites binary to includes the kind of information you would get from dynamic
+      intstumentation, PLUS 
+        - info on functions in your code
+        - other stuff like that?
+
+
+// C 
+tau_cc.sh -tau_options=-optCompInst -o tau_binary C_source.c
+./tau_binary
+
+// C++
+tau_cxx.sh -tau_options=-optCompInst -o tau_binary Cpp_source.cpp
+./tau_binary
+
+// Fortran
+tau_f90.sh -tau_options=-optCompInst -o tau_binary FT_source.f90
+./tau_binary
+
+
+    Source - LOOP level
+// C 
+tau_cc.sh -optTauSelectFile=select.tau -o tau_binary C_source.c
+./tau_binary
+
+// C++
+tau_cxx.sh -optTauSelectFile=select.tau -o tau_binary Cpp_source.cpp
+./tau_binary
+
+// Fortran
+tau_f90.sh -optTauSelectFile=select.tau -o tau_binary FT_source.f90
+./tau_binary
+      
+      
+
+      custom profiling -- choose which functions to profile
+
+    Profiling vs Tracing
+      Profiling - distribution of execution time across routines
+      Tracing - when and where events occur ( process and source code location)
+        
+
+
+    Pprof
+
+
+    Paraprof
+
+  Demonstration
+    Setting up TAU
+      - Downloading
+        google/website
+      - Coniguring 
+        ./configure, point to cuda library
+        make install
+        add bin to path
+
+
+    Library-level profile
+
+    Function-level profile
+
+    Loop-level profile
+      - need to reconfigure with pdt
+
+
+    It would be cool if I could introduce some ineffiicency, notice that it's hurting
+    performance using TAU, remove it, profile again, and see the speedup
+
+    --------
+
+
+TAU questions
+  1. tau_run vs tauex vs tau_exec
+
+  tau_exec
+    - LD_PRELOADING_LIBRARY
+    
+  tau_run - rewrites binary (adds hooks to functions)
+      Dynist API project
+    
+  tau_rewrite
+      PMAC Labs , EP Analytics, calls MAQAO
+
+
+  2. Confused by Source Based vs Compiler Based
+    - do the both use the tau_???.sh compilers? What makes one source-based?
+
+    tau_opt=compInstOpt or something like that
+
+    taucc 
+
+  - Does TAU have built-in tracing? or does it just use Vampir?
+     built in 
+     set TAU_TRACE=1  
+
+  - what is bfd? Do I always need it when configuring?
+    translate interrupt address to source line
+    bfd package
+    system bfd fpick
+    lib_bfd.a
+
+    system installed bfd libraries not compiled with fpic
+    need to recompile bfd package with fpic flag
+      builds libriares fPIC flag positin independent code
+
+  installtau vs ./configure
+
+  Exclude tau calls in tau_exec, or in pprof/paraprof?
+
+  what is the TAU_MAKEFILE for?
+
+  compiler errors when profiling on Alaska
+
+  Set PROFILE_DIR 
+
+  tau --help
+  
+  Tau swiss army knife
+    many ways to insert hooks into code
+    tau supports almost all of them
+    can see whats going on at different levels
+

@@ -1,0 +1,3 @@
+/home/users/jlambert/semvis/project/CMakeFiles/edit_cache.dir
+/home/users/jlambert/semvis/project/CMakeFiles/rebuild_cache.dir
+/home/users/jlambert/semvis/project/CMakeFiles/sobel.dir

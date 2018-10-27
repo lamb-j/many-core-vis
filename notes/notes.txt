@@ -1,0 +1,103 @@
+// April 10
+DPP - Data Parallel Primitives
+  small sets of functions that operate ididvidaul elements of an array
+  ex, map, parallel for, for each, etc..
+
+3 catagories 
+
+  - Data Generation
+    - Fill: generate large array, fill each spot with value
+    - Sequence: same as fill, but add value based on function of index
+
+  - Data Operation
+    - Map: runs a function on each value
+       similar to sequence, but instead of running a function on index, runs
+       on value
+    - Stencil: Function input are nearby values
+
+    - Aggregate:
+      - need binary associator operation
+      - (x + y) + z === x + (y + z)
+      - also called reduce, fold
+      -
+    - Scan:
+      - aggregate but only in certian range
+      - prefix sum 
+
+    - Upper bound/ Lower bound:
+      - 2 arrays, find highest/lowest place x from A can go in B while 
+        preserving B's sorting
+
+  - Data Movement
+    - Gather: You have one array with data, one with indexes, gather 
+      data from those indexes
+
+    - Scatter: ???
+
+    - Compact: 
+
+What are the implementations of DPP? 
+What advantages does DPP have over using some other cross-platform
+  parallel programming model like OpenMP/OpenACC/MPI?
+
+
+
+MPI 
+
+// April 24
+ 
+ArrayHandle - 
+  Basically a wrapper that automatically makes array availible on device
+
+Device Adaptor
+  built in "functions" specific to each device
+  implementations of the DPPs?
+
+Worklets
+  kind of like device kernels
+  
+  two types: field maps, toplogy maps
+
+  each worklet type has an associated dispatcher type.
+
+  ??? I would make a worklet if i needed to do something not possible using
+  only the DPP
+  ??? worklet is compiled for specific target device?
+
+
+// May 15
+"Space filling curves"
+in 3D space, cells close "geographically" are closer in the dataset
+  things that are spatially nearby have similar indicies
+morton curve
+
+
+
+
+----- Papers that explore using Altera OpenCL for graphics algorithms
+
+  FPGA-Specific Optimizations
+     Sliding Window Transformation
+       More efficient to use 1D kernel with sliding window
+       than ND-Range for certian types of problems
+     Kernel Pipelining
+       Altera intruduces a "channels" construct to move data between kernels
+       without transfering back to the host device
+       (Figure 3)
+     Dynamic Memory-Transfer Alignment
+       Altera FPGA OpenCL runtime uses DMA (Direct Memory Access),
+         so allocations should be done using _aligned_malloc() in Windows
+         and posix_memalign() in linux
+
+
+Papers
+  OpenARC OpenACC to FPGA paper
+  
+//\\----
+
+Formula for conference talks:
+  tell a story about why your research is important
+  and drive home high level themes
+  don't spend too much time on results
+
+  quickly show how results support the agenda
